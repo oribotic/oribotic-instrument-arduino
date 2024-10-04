@@ -80,7 +80,23 @@ extern byte activebutton;  // = 0;
 extern bool continuousMode;
 
 #if OSC == 1
-  extern uint8_t bendLinear[256];
+  
+  #if ORIGAMI == ANGLE_SENSOR
+    #if SENSOR_TYPE == K66_F256
+      extern float bendLinear[256];
+    #endif
+    #if SENSOR_TYPE == K66_I512
+      extern int bendLinear[512];
+    #endif
+    #if SENSOR_TYPE == K66_I1024
+      extern uint16_t bendLinear[1024];
+    #endif
+    #if SENSOR_TYPE == Y8_I512
+      extern int bendLinear[512];
+    #endif
+  #else
+    extern uint8_t bendLinear[256];
+  #endif
 #endif
 #if MIDI == 1
   extern uint8_t bendLinear[128]; 

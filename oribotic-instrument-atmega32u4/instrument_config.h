@@ -14,14 +14,14 @@
 #include <Arduino.h>
 
 // only switch one on at a time
-#define MIDI 1
-#define OSC 0
+#define MIDI 0
+#define OSC 1
 
 #if MIDI
 #define INTERVALDELAY 5
 #endif
 #if OSC 
-#define INTERVALDELAY 10
+#define INTERVALDELAY 5
 #endif 
 
 extern uint8_t intervaldelay;
@@ -34,7 +34,8 @@ extern uint8_t intervaldelay;
 #define KRESLING 1
 #define YOSHIMURA 2
 #define SUKI 3
-#define ORIGAMI YOSHIMURA
+#define ANGLE_SENSOR 4
+#define ORIGAMI ANGLE_SENSOR
 
 #define SOFT_FILTER_LIMIT 200
 
@@ -53,6 +54,8 @@ extern uint8_t intervaldelay;
 //#define MODE_SERIAL_DEBUG_BYTES 5 // no longer used 
 #define MAXMODE 6 // max allowed mode index
 
+#define EXHIBITION_MODE 0
+
 #if ORIGAMI==YOSHIMURA
     #include "instrument_Y8.h"
 #endif
@@ -62,5 +65,13 @@ extern uint8_t intervaldelay;
 #if ORIGAMI==SUKI
     #include "instrument_S12.h"
 #endif  
+#if ORIGAMI==ANGLE_SENSOR
+    #define K66_F256 0
+    #define K66_I512 1
+    #define K66_I1024 2
+    #define Y8_I512 3
+    #define SENSOR_TYPE Y8_I512
 
+    #include "instrument_AS2.h"
+#endif  
 #endif

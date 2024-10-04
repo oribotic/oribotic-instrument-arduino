@@ -96,7 +96,10 @@ void loop() {
     MPR121_3.updateAll();
   #endif
 
-  checkbuttons();
+  if (!EXHIBITION_MODE)
+  {
+    checkbuttons();
+  }
 
   for (i = 0; i < PINCOUNT; i++)
   {

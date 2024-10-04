@@ -90,7 +90,7 @@ void soft(uint8_t key)
   uint8_t panel = orikeys[key].panel;
   uint8_t state = orikeys[key].state;
   uint16_t last = orikeys[key].last;
-  uint16_t filtered;
+  int filtered;
   uint8_t baseline;
   long normalised;
   bool touched;
@@ -132,7 +132,7 @@ void raw(uint8_t key)
     uint8_t note = orikeys[key].note + rootNote;
     uint8_t pin;
     uint8_t panel = orikeys[key].panel;
-    uint16_t filtered;
+    int filtered;
     #if REVERSED
       pin = reverse_logical[orikeys[key].pin];
     #else
@@ -144,12 +144,12 @@ void raw(uint8_t key)
     send("r", key, note, filtered);    
 }
 
-uint16_t mapSoft(uint8_t key, uint16_t filtered)
+uint16_t mapSoft(uint8_t key, int filtered)
 {
   uint8_t pin = orikeys[key].pin;
   uint8_t panel = orikeys[key].panel;
   uint8_t touchThreshold = MPRpanels[panel].mpr->getTouchThreshold(pin);
-  uint16_t softTouch;
+  int softTouch;
   long normalised;
   uint8_t range = orikeys[key].soft - orikeys[key].hard;
   
@@ -169,7 +169,7 @@ uint16_t mapSoft(uint8_t key, uint16_t filtered)
     orikeys[key].soft = filtered;
   }
 
-  uint16_t constrained = filtered;
+  int constrained = filtered;
   // constrain the filtered between hard and soft
   if (constrained > orikeys[key].soft)
   {
@@ -214,6 +214,16 @@ uint16_t mapSoft(uint8_t key, uint16_t filtered)
   return softTouch;
 }
 #if OSC == 1
+
+void sendFloat(char channel[1], uint8_t key, uint8_t note, float state )
+{
+  char msg_str[12];
+  sprintf(msg_str, "/%s", channel);
+  // OLD /d/1 0 68
+  // NEW /d 1 0 68
+  sendOSCFloat(msg_str, key, state, note);
+}
+
 
 void send(char channel[1], uint8_t key, uint8_t note, uint16_t state )
 {
@@ -310,7 +320,7 @@ void touchPlay(uint8_t key)
   uint8_t panel = orikeys[key].panel;
   uint8_t state = orikeys[key].state;
   uint16_t last = orikeys[key].last;
-  uint16_t filtered;
+  int filtered;
   long normalised;
   bool newtouch;
   bool touched;
@@ -380,18 +390,58 @@ void touchPlay(uint8_t key)
   {
     filtered = orikeys[key].bendHI;
   }
+
   long longnormal = map(filtered, orikeys[key].bendLO, orikeys[key].bendHI, 0, ARR_LEN(bendLinear)-1);
   normalised = map(filtered, orikeys[key].bendLO, orikeys[key].bendHI, 0, ARR_LEN(bendLinear)-1);
-  arg_state = bendLinear[(int)longnormal]; // convert normal value to linear value
-  if (filtered != last)
-  {
-    //sendOSC(msg_str, arg_state, arg_note); // send every time
-    send("b", key, note, arg_state);
-  }
+
+  #if ORIGAMI == ANGLE_SENSOR
+    
+    // work with float values
+    float float_state;
+    float_state = bendLinear[(uint16_t)longnormal];
+
+
+    if (DEBUG_LEVEL == 3)
+    {
+      Serial.print(key);
+      Serial.print(" \tAL: ");
+      Serial.print(ARR_LEN(bendLinear)-1);
+
+      Serial.print(" \tHi: ");
+      Serial.print(orikeys[key].bendHI);
+
+      Serial.print(" \tLo: ");
+      Serial.print(orikeys[key].bendLO);
+
+      Serial.print("\tF:");
+      Serial.print(filtered);
+
+      Serial.print("\tN:");
+      Serial.print((int)longnormal);
+
+      Serial.print("\tOSC:");
+      Serial.println(float_state);
+    } else {
+      if (filtered != last)
+      {
+        //sendOSC(msg_str, arg_state, arg_note); // send every time
+        sendFloat("b", key, note, float_state);
+      }
+    }
+    
+    
+  #else
+    arg_state = bendLinear[(int)longnormal]; // convert normal value to linear value
+    if (filtered != last)
+    {
+      //sendOSC(msg_str, arg_state, arg_note); // send every time
+      send("b", key, note, arg_state);
+    }
+  #endif
   
 } 
 
-uint8_t getActionState (uint8_t key, uint16_t filtered)
+uint8_t getActionState (uint8_t key, int filtered)
 {
   byte action = 0;
   if (filtered < orikeys[key].bendHI)
@@ -593,7 +643,7 @@ void serialDebug (byte key, byte raw)
   uint8_t panel = orikeys[key].panel;
   uint8_t state = orikeys[key].state;
   uint8_t short_filtered;
-  uint16_t filtered = MPRpanels[panel].mpr->getFilteredData(pin);
+  int filtered = MPRpanels[panel].mpr->getFilteredData(pin);
   bool touchData = MPRpanels[panel].mpr->getTouchData(pin);
   orikeys[key].last = filtered;
   char output[4];
