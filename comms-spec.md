@@ -92,6 +92,7 @@ MIDI
 | set bendLO                     | 0 [111] 10      | **sends to instrument**  |                 |                       |                 |
 | set bendHI                     | 0 [111] 15      | **sends to instrument**  |                 |                       |                 |
 | set bendLO Hard Soft           | 0 [111] 20      | **sends to instrument**  |                 |                       |                 |
+| set bendMID                    | 0 [111] 25      | **sends to instrument**  |                 |                       |                 |
 | calibrate                      | 0 [111] 100     | **sends to instrument**  |                 |                       |                 |
 | mode                           | 0 [110] [0-127] | **sends to instrument**  |                 |                       |                 |
 | note set base                  | 0 [109] [0-127] | **sends to instrument**  |                 |                       |                 |
